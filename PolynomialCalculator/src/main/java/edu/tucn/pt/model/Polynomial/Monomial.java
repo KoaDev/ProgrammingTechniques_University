@@ -5,11 +5,18 @@ public class Monomial {
     private int power;
     private double coefficient;
 
+    /**
+     * Default constructor
+     */
     public Monomial() {
         this.power = 0;
         this.coefficient = 0;
     }
 
+    /**
+     * @param power - the power of the monomial
+     * @param coefficient - the coefficient of the monomial
+     */
     public Monomial(int power, double coefficient) {
         this.power = power;
         this.coefficient = coefficient;
@@ -29,14 +36,23 @@ public class Monomial {
         this.power = power;
     }
 
+    /**
+     * @return the coefficient
+     */
     public double getCoefficient() {
         return coefficient;
     }
 
+    /**
+     * @param coefficient the coefficient to set
+     */
     public void setCoefficient(double coefficient) {
         this.coefficient = coefficient;
     }
 
+    /**
+     * @return the monomial as a string
+     */
     public void displayMonom() {
 
         if (coefficient > 0)
@@ -47,7 +63,9 @@ public class Monomial {
             System.out.print("+" + 0 + " ");
     }
 
-
+    /**
+     * @return the monomial as a string
+     */
     public String getMonomString() {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -58,6 +76,9 @@ public class Monomial {
 
     }
 
+    /**
+     * @return the monomial as a string
+     */
     // pe integer
     public String getIntMonomString() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -68,6 +89,9 @@ public class Monomial {
             return "";
     }
 
+    /**
+     * @return the monomial as a string
+     */
     public void displayIntegratedMonom() {
         if (power == 0)
             System.out.print("+" + coefficient + "lnX" + " ");
@@ -81,6 +105,9 @@ public class Monomial {
         }
     }
 
+    /**
+     * @return the monomial as a string
+     */
     public String getIntegratedMonomString() {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -94,6 +121,9 @@ public class Monomial {
             return "";
     }
 
+    /**
+     * @return the monomial as a string
+     */
     // pe integer
     public String getIntIntegratedMonomString() {
         StringBuilder stringBuilder = new StringBuilder();

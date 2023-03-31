@@ -7,6 +7,9 @@ import edu.tucn.pt.view.SwingUI;
 
 import javax.swing.*;
 
+/**
+ * The controller
+ */
 public class ApplicationController {
 
     private final SwingUI view;
@@ -54,7 +57,7 @@ public class ApplicationController {
 
                 if (coeff != 0) {
                     Monomial myMonom = new Monomial(power, coeff);
-                    currentPolynome.getPolynome().add(myMonom);
+                    currentPolynome.getPolynome().put(power, myMonom);
                 }
             }
         } catch (Exception e) {
@@ -78,7 +81,7 @@ public class ApplicationController {
      * @return - the difference of the two polynomials
      */
     public Polynomial subtract(Polynomial p, Polynomial q) {
-        return p.substract(p ,q);
+        return p.subtract(p ,q);
     }
 
     /**

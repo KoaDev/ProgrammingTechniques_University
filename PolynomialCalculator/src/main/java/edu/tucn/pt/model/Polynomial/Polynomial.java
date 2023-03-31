@@ -4,11 +4,10 @@ import javax.swing.*;
 import java.util.*;
 
 public class Polynomial {
-
     /**
-     * The polynome is an ArrayList of Monomials
+     * The polynome is a TreeMap of Monomials with degree as key
      */
-    private final ArrayList<Monomial> polynome = new ArrayList<>();
+    private final TreeMap<Integer, Monomial> polynome = new TreeMap<>();
 
     /**
      * Default constructor
@@ -16,17 +15,9 @@ public class Polynomial {
     public Polynomial() {}
 
     /**
-     * Sorts the polynome by degree
-     */
-    public void sortDegree() {
-
-        polynome.sort((o1, o2) -> Integer.compare(o2.getPower(), o1.getPower()));
-    }
-
-    /**
      * @return the polynome
      */
-    public ArrayList<Monomial> getPolynome() {
+    public TreeMap<Integer, Monomial> getPolynome() {
         return this.polynome;
     }
 
@@ -36,7 +27,7 @@ public class Polynomial {
     public String getPolinomString() {
         StringBuilder stringBuilder = new StringBuilder();
 
-        for (Monomial currentMonom : this.getPolynome()) {
+        for (Monomial currentMonom : this.getPolynome().values()) {
             stringBuilder.append(currentMonom.getMonomString());
         }
         return stringBuilder.toString();
@@ -44,17 +35,10 @@ public class Polynomial {
 
     /**
      * @param degree the degree of the monomial
-     * @return the monomial with the given degree
+     * @return the monomial with the given degree or null if not found
      */
     public Monomial findDegree(int degree) {
-        Monomial resultMonom = null;
-
-        for (Monomial currentMonom : this.getPolynome()) {
-            if (currentMonom.getPower() == degree)
-                resultMonom = currentMonom;
-        }
-
-        return resultMonom;
+        return this.getPolynome().getOrDefault(degree, null);
     }
 
     /**
@@ -64,12 +48,12 @@ public class Polynomial {
     public Polynomial copyPolynome(Polynomial p) {
         Polynomial copyPolinom = new Polynomial();
 
-        for (Monomial currentMonom : p.getPolynome()) {
-            int power = currentMonom.getPower();
-            double coeff = currentMonom.getCoefficient();
+        for (Map.Entry<Integer, Monomial> entry : p.getPolynome().entrySet()) {
+            int power = entry.getKey();
+            double coeff = entry.getValue().getCoefficient();
 
             Monomial copyMonom = new Monomial(power, coeff);
-            copyPolinom.getPolynome().add(copyMonom);
+            copyPolinom.getPolynome().put(power, copyMonom);
         }
         return copyPolinom;
     }
@@ -80,23 +64,21 @@ public class Polynomial {
      * @return the sum of the two polynomes
      */
     public Polynomial add(Polynomial p, Polynomial q) {
-        Polynomial sumPolinom;
-        sumPolinom = p.copyPolynome(p);
+        Polynomial sumPolinom = p.copyPolynome(p);
 
-        for (Monomial currentMonom : q.getPolynome()) {
-            int currentDegree = currentMonom.getPower();
-            double currentCoefficient = currentMonom.getCoefficient();
+        for (Map.Entry<Integer, Monomial> entry : q.getPolynome().entrySet()) {
+            int currentDegree = entry.getKey();
+            double currentCoefficient = entry.getValue().getCoefficient();
 
             Monomial searchedMonom = sumPolinom.findDegree(currentDegree);
             if (searchedMonom == null) {
-                sumPolinom.getPolynome().add(currentMonom);
+                Monomial newMonom = new Monomial(currentDegree, currentCoefficient);
+                sumPolinom.getPolynome().put(currentDegree, newMonom);
             } else {
                 double oldCoefficient = searchedMonom.getCoefficient();
                 searchedMonom.setCoefficient(currentCoefficient + oldCoefficient);
             }
         }
-
-        sumPolinom.sortDegree();
 
         return sumPolinom;
     }
@@ -106,26 +88,22 @@ public class Polynomial {
      * @param q the second polynome
      * @return the difference of the two polynomes
      */
-    public Polynomial substract(Polynomial p, Polynomial q) {
-        Polynomial differencePolinom;
-        differencePolinom = p.copyPolynome(p);
+    public Polynomial subtract(Polynomial p, Polynomial q) {
+        Polynomial differencePolinom = p.copyPolynome(p);
 
-        for (Monomial currentMonom : q.getPolynome()) {
-            int currentDegree = currentMonom.getPower();
-            double currentCoefficient = currentMonom.getCoefficient();
+        for (Map.Entry<Integer, Monomial> entry : q.getPolynome().entrySet()) {
+            int currentDegree = entry.getKey();
+            double currentCoefficient = entry.getValue().getCoefficient();
 
             Monomial searchedMonom = differencePolinom.findDegree(currentDegree);
             if (searchedMonom == null) {
-
                 Monomial newMonom = new Monomial(currentDegree, -currentCoefficient);
-
-                differencePolinom.getPolynome().add(newMonom);
+                differencePolinom.getPolynome().put(currentDegree, newMonom);
             } else {
                 double oldCoefficient = searchedMonom.getCoefficient();
                 searchedMonom.setCoefficient(oldCoefficient - currentCoefficient);
             }
         }
-        differencePolinom.sortDegree();
 
         return differencePolinom;
     }
@@ -136,49 +114,48 @@ public class Polynomial {
      * @return the product of the two polynomes
      */
     public Polynomial multiply(Polynomial p, Polynomial q) {
-        Polynomial multipliedPolinom = new Polynomial(), pp = p.copyPolynome(p), qq = q.copyPolynome(q);
+        Polynomial multipliedPolinom = new Polynomial();
 
-        for (Monomial currentMonom1 : pp.getPolynome()) {
+        for (Monomial currentMonom1 : p.getPolynome().values()) {
             int powerP1 = currentMonom1.getPower();
             double coeffP1 = currentMonom1.getCoefficient();
 
-            for (Monomial currentMonom2 : qq.getPolynome()) {
-                int powerP2 = currentMonom2.getPower(), resultedPower = powerP1 + powerP2;
-                double coeffP2 = currentMonom2.getCoefficient(), resultedCoeff = coeffP1 * coeffP2;
+            for (Monomial currentMonom2 : q.getPolynome().values()) {
+                int powerP2 = currentMonom2.getPower();
+                int resultedPower = powerP1 + powerP2;
+                double coeffP2 = currentMonom2.getCoefficient();
+                double resultedCoeff = coeffP1 * coeffP2;
 
                 Monomial searchedMonom = multipliedPolinom.findDegree(resultedPower);
                 if (searchedMonom == null) {
                     Monomial newMonom = new Monomial(resultedPower, resultedCoeff);
-                    multipliedPolinom.getPolynome().add(newMonom);
+                    multipliedPolinom.getPolynome().put(resultedPower, newMonom);
                 } else {
                     double oldCoeff = searchedMonom.getCoefficient();
                     searchedMonom.setCoefficient(oldCoeff + resultedCoeff);
                 }
             }
         }
-        multipliedPolinom.sortDegree();
+
         return multipliedPolinom;
     }
 
     /**
-     * @param p the polynome to be derived
-     * @return the derived polynome
+     * @param p the polynome to be derivated
+     * @return the derivated polynome
      */
     public Polynomial derivate(Polynomial p) {
         Polynomial derivatedPolinom = new Polynomial();
 
-        Polynomial copyP = p.copyPolynome(p);
+        for (Map.Entry<Integer, Monomial> entry : p.getPolynome().entrySet()) {
+            int power = entry.getKey();
+            double coeff = entry.getValue().getCoefficient();
 
-        for (Monomial currentMonom : copyP.getPolynome()) {
-            int power = currentMonom.getPower();
-            double coeff = currentMonom.getCoefficient();
-
-            currentMonom.setCoefficient(power * coeff);
-            currentMonom.setPower(power - 1);
-
-            derivatedPolinom.getPolynome().add(currentMonom);
+            if (power > 0) {
+                Monomial derivatedMonom = new Monomial(power - 1, power * coeff);
+                derivatedPolinom.getPolynome().put(power - 1, derivatedMonom);
+            }
         }
-        derivatedPolinom.sortDegree();
 
         return derivatedPolinom;
     }
@@ -190,79 +167,68 @@ public class Polynomial {
     public Polynomial integrate(Polynomial p) {
         Polynomial integratedPolinom = new Polynomial();
 
-        Polynomial pp = p.copyPolynome(p);
+        for (Map.Entry<Integer, Monomial> entry : p.getPolynome().entrySet()) {
+            int power = entry.getKey();
+            double coeff = entry.getValue().getCoefficient();
 
-        for (Monomial currentMonom : pp.getPolynome()) {
-            int power = currentMonom.getPower();
-            double coeff = currentMonom.getCoefficient();
-
-            currentMonom.setPower(power + 1);
+            Monomial newMonom;
             if (power == -1) {
-                currentMonom.setCoefficient(coeff);
-            } else
-                currentMonom.setCoefficient(coeff / (power + 1));
+                newMonom = new Monomial(power + 1, coeff);
+            } else {
+                newMonom = new Monomial(power + 1, coeff / (power + 1));
+            }
 
-            integratedPolinom.getPolynome().add(currentMonom);
+            integratedPolinom.getPolynome().put(power + 1, newMonom);
         }
-        integratedPolinom.sortDegree();
         return integratedPolinom;
     }
 
     /**
-     * @param p the polynome to be integrated
-     * @return the divided polynome
+     * @param dividend the polynome to be divided
+     * @return the quotient and the remainder of the division
      */
-    public Polynomial[] divide(Polynomial p) {
-        Polynomial quotient = new Polynomial(), remainder, pp = p.copyPolynome(p);
-        remainder = this.copyPolynome(this);
+    public Polynomial[] divide(Polynomial dividend) {
+        Polynomial quotient = new Polynomial(), remainder;
+        remainder = dividend.copyPolynome(dividend);
 
-        Monomial dividerFirstMonom = pp.getPolynome().get(0);
-        Monomial remainderMonom = remainder.getFirstMonom(remainder);
+        Monomial dividerFirstMonom = this.getPolynome().firstEntry().getValue();
+        Monomial remainderFirstMonom = remainder.getPolynome().firstEntry().getValue();
 
-        double qCoeff, dividerCoef = dividerFirstMonom.getCoefficient(),
-                remainderCoeff = remainderMonom.getCoefficient();
-        int dividerPower = dividerFirstMonom.getPower(), remainderPower = remainderMonom.getPower(), qPower;
+        double quotientCoeff, dividerCoeff = dividerFirstMonom.getCoefficient(),
+                remainderCoeff = remainderFirstMonom.getCoefficient();
+        int dividerPower = dividerFirstMonom.getPower(), remainderPower = remainderFirstMonom.getPower(), quotientPower;
 
         if (remainderPower < dividerPower) {
-            JOptionPane.showMessageDialog(null, "ERROR : DIVISION NOT POSSIBLE, divident power < divider power!");
+            JOptionPane.showMessageDialog(null, "ERROR: DIVISION NOT POSSIBLE, divident power < divider power!");
             return null;
         }
 
         while (remainderPower >= dividerPower) {
-            qPower = remainderPower - dividerPower;
-            qCoeff = remainderCoeff / dividerCoef;
+            quotientPower = remainderPower - dividerPower;
+            quotientCoeff = remainderCoeff / dividerCoeff;
 
-            Monomial myMonom = new Monomial(qPower, qCoeff);
-            quotient.getPolynome().add(myMonom);
+            Monomial quotientMonom = new Monomial(quotientPower, quotientCoeff);
+            quotient.getPolynome().put(quotientPower, quotientMonom);
 
-            Polynomial helper = new Polynomial();
-            helper.getPolynome().add(myMonom);
+            Polynomial tempPolynomial = new Polynomial();
+            tempPolynomial.getPolynome().put(quotientPower, quotientMonom);
 
-            remainder = remainder.substract(remainder, (helper.multiply(helper, pp)));
+            remainder = remainder.subtract(remainder, this.multiply(tempPolynomial, this));
 
-            remainderMonom = remainder.getFirstMonom(remainder);
-            remainderPower = remainderMonom.getPower();
-            remainderCoeff = remainderMonom.getCoefficient();
-        }
-        Polynomial[] returnedPolinom = new Polynomial[2];
-        returnedPolinom[0] = quotient;
-        returnedPolinom[1] = remainder;
-        return returnedPolinom;
-    }
-
-    /**
-     * @param p the polynome to be integrated
-     * @return the integrated polynome
-     */
-    public Monomial getFirstMonom(Polynomial p) {
-        Monomial firstMonom = new Monomial();
-
-        for (Monomial currentMonom : p.getPolynome()) {
-            if (currentMonom.getCoefficient() != 0) {
-                firstMonom = currentMonom;
+            if (!remainder.getPolynome().isEmpty()) {
+                remainderFirstMonom = remainder.getPolynome().firstEntry().getValue();
+                remainderPower = remainderFirstMonom.getPower();
+                remainderCoeff = remainderFirstMonom.getCoefficient();
+            } else {
                 break;
             }
         }
-        return firstMonom;
+
+        Polynomial[] result = new Polynomial[2];
+        result[0] = quotient;
+        result[1] = remainder;
+        return result;
     }
+
+
 }
