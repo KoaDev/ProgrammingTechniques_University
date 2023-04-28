@@ -13,9 +13,14 @@ import edu.tucn.pt.model.ServiceQueue;
 import edu.tucn.pt.view.SwingUI;
 
 
+/**
+ * This class is the main controller of the application. It is responsible for
+ * initializing the simulation, starting the clock and the queues, and
+ * controlling the simulation flow.
+ */
 public class ApplicationController implements Runnable {
 
-    private SwingUI userInterface;
+    private SwingUI swingUI;
 
     private int arrivalMin;
     private int arrivalMax;
@@ -38,24 +43,31 @@ public class ApplicationController implements Runnable {
     private int peakHour = 0;
     private int totalServiceTime = 0;
 
+    /**
+     * This method initializes the simulation by reading the input data from the
+     * SwingUI and creating the queues.
+     */
     public void start() {
-        userInterface = new SwingUI();
-        userInterface.setVisible(true);
+        swingUI = new SwingUI();
+        swingUI.setVisible(true);
         initializeSimulation();
 
-        clock = new Clock(userInterface);
+        clock = new Clock(swingUI);
         controllerThread = new Thread(this);
     }
 
+    /**
+     * @return the number of clients that arrived in the simulation
+     */
     public boolean isInputDataValid() {
-        String arrivalMin = userInterface.getTimeMin();
-        String arrivalMax = userInterface.getTimeMax();
-        String serviceMin = userInterface.getServiceTimeMin();
-        String serviceMax = userInterface.getServiceTimeMax();
-        String numberOfQueues = userInterface.getNumberOfQueues();
-        String simulationTime = userInterface.getSimulationTime();
-        String extraTimeMin = userInterface.getExtraTimeMin();
-        String extraTimeMax = userInterface.getExtraTimeMax();
+        String arrivalMin = swingUI.getTimeMin();
+        String arrivalMax = swingUI.getTimeMax();
+        String serviceMin = swingUI.getServiceTimeMin();
+        String serviceMax = swingUI.getServiceTimeMax();
+        String numberOfQueues = swingUI.getNumberOfQueues();
+        String simulationTime = swingUI.getSimulationTime();
+        String extraTimeMin = swingUI.getExtraTimeMin();
+        String extraTimeMax = swingUI.getExtraTimeMax();
 
         try {
             int arrMin = Integer.parseInt(arrivalMin);
@@ -85,6 +97,16 @@ public class ApplicationController implements Runnable {
         }
     }
 
+    /**
+     * @param arrMin the arrivalMin to set
+     * @param arrMax the arrivalMax to set
+     * @param serMin the serviceMin to set
+     * @param serMax the serviceMax to set
+     * @param numQueues the numQueues to set
+     * @param simTime the simTime to set
+     * @param extraMin the extraMin to set
+     * @param extraMax the extraMax to set
+     */
     public void setData(int arrMin, int arrMax, int serMin, int serMax, int numQueues, int simTime, int extraMin, int extraMax) {
         this.arrivalMin = arrMin;
         this.arrivalMax = arrMax;
@@ -96,15 +118,19 @@ public class ApplicationController implements Runnable {
         this.extraTimeMax = extraMax;
     }
 
+    /**
+     * This method initializes the simulation by reading the input data from the
+     * SwingUI and creating the queues.
+     */
     public void initializeSimulation() {
-        userInterface.addStartButtonActionListener(new ActionListener() {
+        swingUI.addStartButtonActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (isInputDataValid()) {
                     queues = new ServiceQueue[numQueues];
 
                     for (int i = 0; i < numQueues; i++) {
-                        queues[i] = new ServiceQueue(i + 1, clock, userInterface);
+                        queues[i] = new ServiceQueue(i + 1, clock, swingUI);
                     }
                     clock.startClock();
                     controllerThread.start();
@@ -113,6 +139,9 @@ public class ApplicationController implements Runnable {
         });
     }
 
+    /**
+     * @return the maxClientsAtOnce
+     */
     public int findShortestQueue() {
         int minIndex = 0;
         int minQueueLength = queues[0].getNumClientsInQueue();
@@ -125,6 +154,9 @@ public class ApplicationController implements Runnable {
         return minIndex;
     }
 
+    /**
+     * @return the maxClientsAtOnce
+     */
     public int getTotalNumClients() {
         int numClients = 0;
         for (ServiceQueue queue : queues) {
@@ -133,6 +165,10 @@ public class ApplicationController implements Runnable {
         return numClients;
     }
 
+    /**
+     * This method is called when the controllerThread is started. It generates
+     * clients and sends them to the shortest queue.
+     */
     @Override
     public void run() {
         while (clock.getTime() < simulationDuration) {
@@ -168,10 +204,10 @@ public class ApplicationController implements Runnable {
             queue.stop();
         }
 
-        userInterface.updateMinimumOutput("Total clients served: " + numClients);
-        userInterface.updateMinimumOutput("Average service time: " + (float) totalServiceTime / numClients);
-        userInterface.updateMinimumOutput("Peak hour: " + peakHour + " with " + maxClientsAtOnce + " clients.");
-        userInterface.updateMinimumOutput("In the interval " + extraTimeMin + "->" + extraTimeMax + " we served " + clientsInterval + " clients and the average service time was " + (float) serviceInterval / clientsInterval);
+        swingUI.updateMinimumOutput("Total clients served: " + numClients);
+        swingUI.updateMinimumOutput("Average service time: " + (float) totalServiceTime / numClients);
+        swingUI.updateMinimumOutput("Peak hour: " + peakHour + " with " + maxClientsAtOnce + " clients.");
+        swingUI.updateMinimumOutput("In the interval " + extraTimeMin + "->" + extraTimeMax + " we served " + clientsInterval + " clients and the average service time was " + (float) serviceInterval / clientsInterval);
         clock.stopClock();
     }
 
