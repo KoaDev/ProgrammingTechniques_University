@@ -57,7 +57,7 @@ public class ApplicationController implements Runnable {
     }
 
     /**
-     * @return the number of clients that arrived in the simulation
+     * @return boolean value
      */
     public boolean isInputDataValid() {
         String arrivalMin = swingUI.getTimeMin();
