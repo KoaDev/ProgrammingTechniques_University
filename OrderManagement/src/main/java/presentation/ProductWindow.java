@@ -1,6 +1,7 @@
 // presentation/ProductWindow.java
 package presentation;
 
+import businessLayer.ProductService;
 import dataAccessLayer.ProductDAO;
 import model.Product;
 
@@ -14,20 +15,16 @@ public class ProductWindow extends JFrame {
     private JTextField nameField;
     private JTextField priceField;
     private JTextField stockField;
-    private JButton addButton;
-    private JButton editButton;
-    private JButton deleteButton;
     private JTable productTable;
-    private ProductDAO productDAO;
+    private final ProductService productService;
+
 
     public ProductWindow() {
         setTitle("Product Operations");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(800, 600);
         setLayout(null);
-
-        productDAO = new ProductDAO();
-
+        productService = new ProductService();
         initFields();
         initButtons();
         initTable();
@@ -50,7 +47,7 @@ public class ProductWindow extends JFrame {
     }
 
     private void initButtons() {
-        addButton = new JButton("Add");
+        JButton addButton = new JButton("Add");
         addButton.setBounds(250, 25, 100, 25);
         addButton.addActionListener(new ActionListener() {
             @Override
@@ -59,13 +56,13 @@ public class ProductWindow extends JFrame {
                 double price = Double.parseDouble(priceField.getText());
                 int stock = Integer.parseInt(stockField.getText());
                 Product product = new Product(0, name, price, stock);
-                productDAO.addProduct(product);
+                productService.addProduct(product);
                 loadProductsFromDatabase();
             }
         });
         add(addButton);
 
-        editButton = new JButton("Edit");
+        JButton editButton = new JButton("Edit");
         editButton.setBounds(250, 60, 100, 25);
         editButton.addActionListener(new ActionListener() {
             @Override
@@ -77,14 +74,14 @@ public class ProductWindow extends JFrame {
                     double price = Double.parseDouble(priceField.getText());
                     int stock = Integer.parseInt(stockField.getText());
                     Product product = new Product(id, name, price, stock);
-                    productDAO.updateProduct(product);
+                    productService.updateProduct(product);
                     loadProductsFromDatabase();
                 }
             }
         });
         add(editButton);
 
-        deleteButton = new JButton("Delete");
+        JButton deleteButton = new JButton("Delete");
         deleteButton.setBounds(250, 95, 100, 25);
         deleteButton.addActionListener(new ActionListener() {
             @Override
@@ -92,7 +89,7 @@ public class ProductWindow extends JFrame {
                 int selectedRow = productTable.getSelectedRow();
                 if (selectedRow >= 0) {
                     int id = (int) productTable.getValueAt(selectedRow, 0);
-                    productDAO.deleteProduct(id);
+                    productService.deleteProduct(id);
                     loadProductsFromDatabase();
                 }
             }
@@ -118,7 +115,7 @@ public class ProductWindow extends JFrame {
 
     // Load products from the database and populate the table
     private void loadProductsFromDatabase() {
-        List<Product> products = productDAO.getAllProducts();
+        List<Product> products = productService.getAllProducts();
 
         if (products != null) {
             DefaultTableModel model = (DefaultTableModel) productTable.getModel();

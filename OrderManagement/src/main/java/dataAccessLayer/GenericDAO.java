@@ -12,16 +12,27 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @param <T> the type of the objects stored in the database
+ *           Generic DAO class used to perform CRUD operations on the database
+ */
 public abstract class GenericDAO<T> {
     private final Class<T> type;
 
+    /**
+     * Constructor that sets the type of the objects stored in the database
+     */
     @SuppressWarnings("unchecked")
     public GenericDAO() {
         this.type = ((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]);
     }
 
+    /**
+     * @param obj the object to be inserted into the database
+     * @return the inserted object
+     */
     // Create
-    public T create(T obj) {
+    public T insert(T obj) {
         try (Connection connection = DBConnection.getConnection()) {
             StringBuilder query = new StringBuilder("INSERT INTO " + type.getSimpleName().toLowerCase() + "s (");
             Field[] fields = type.getDeclaredFields();
@@ -64,8 +75,12 @@ public abstract class GenericDAO<T> {
         return obj;
     }
 
+    /**
+     * @param obj the object to be updated in the database
+     *            Updates the object with the same id as the given object
+     */
     // Edit
-    public void edit(T obj) {
+    public void update(T obj) {
         try (Connection connection = DBConnection.getConnection()) {
             StringBuilder query = new StringBuilder("UPDATE " + type.getSimpleName().toLowerCase() + "s SET ");
             Field[] fields = type.getDeclaredFields();
@@ -81,11 +96,14 @@ public abstract class GenericDAO<T> {
 
             int parameterIndex = 1;
             for (Field field : fields) {
-                field.setAccessible(true);
-                preparedStatement.setObject(parameterIndex, field.get(obj));
-                parameterIndex++;
+                if (!field.getName().equals("id")) {
+                    field.setAccessible(true);
+                    preparedStatement.setObject(parameterIndex, field.get(obj));
+                    parameterIndex++;
+                }
             }
-            preparedStatement.setObject(parameterIndex, type.getMethod("getId").invoke(obj));
+            // Note the adjustment here: use fields.length instead of parameterIndex
+            preparedStatement.setObject(fields.length, type.getMethod("getId").invoke(obj));
 
             preparedStatement.executeUpdate();
         } catch (SQLException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
@@ -93,8 +111,12 @@ public abstract class GenericDAO<T> {
         }
     }
 
+    /**
+     * @param id the id of the object to be deleted from the database
+     *           Deletes the object with the given id from the database
+     */
     // Delete
-    public void delete(int id) {
+    public void deleteById(int id) {
         try (Connection connection = DBConnection.getConnection()) {
             String query = "DELETE FROM " + type.getSimpleName().toLowerCase() + "s WHERE id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -106,8 +128,12 @@ public abstract class GenericDAO<T> {
         }
     }
 
+    /**
+     * @param id the id of the object to be found in the database
+     * @return the object with the given id
+     */
     // Find
-    public T find(int id) {
+    public T findById(int id) {
         T obj = null;
         try (Connection connection = DBConnection.getConnection()) {
             String query = "SELECT * FROM " + type.getSimpleName().toLowerCase() + "s WHERE id = ?";
@@ -121,7 +147,15 @@ public abstract class GenericDAO<T> {
                 for (Field field : fields) {
                     field.setAccessible(true);
                     Method setMethod = type.getMethod("set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1), field.getType());
-                    setMethod.invoke(obj, resultSet.getObject(field.getName()));
+                    Object value = resultSet.getObject(field.getName());
+                    if (value != null) {
+                        if (field.getType() == int.class) {
+                            value = resultSet.getInt(field.getName());
+                        } else if (field.getType() == double.class) {
+                            value = resultSet.getDouble(field.getName());
+                        } // add more types if needed
+                    }
+                    setMethod.invoke(obj, value);
                 }
             }
         } catch (SQLException | IllegalAccessException | NoSuchMethodException | InvocationTargetException |
@@ -131,6 +165,10 @@ public abstract class GenericDAO<T> {
         return obj;
     }
 
+    /**
+     * @return a list of all objects of the type of the DAO
+     * Finds all objects of the type of the DAO
+     */
     public List<T> findAll() {
         List<T> results = new ArrayList<>();
         try (Connection connection = DBConnection.getConnection()) {
@@ -145,7 +183,15 @@ public abstract class GenericDAO<T> {
                 for (Field field : fields) {
                     field.setAccessible(true);
                     Method setMethod = type.getMethod("set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1), field.getType());
-                    setMethod.invoke(obj, resultSet.getObject(field.getName()));
+                    Object value = resultSet.getObject(field.getName());
+                    if (value != null) {
+                        if (field.getType() == int.class) {
+                            value = resultSet.getInt(field.getName());
+                        } else if (field.getType() == double.class) {
+                            value = resultSet.getDouble(field.getName());
+                        } // add more types if needed
+                    }
+                    setMethod.invoke(obj, value);
                 }
                 results.add(obj);
             }
@@ -154,5 +200,6 @@ public abstract class GenericDAO<T> {
         }
         return results;
     }
+
 
 }

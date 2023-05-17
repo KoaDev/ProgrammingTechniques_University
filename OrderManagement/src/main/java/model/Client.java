@@ -38,4 +38,9 @@ public class Client {
     public void setAddress(String address) {
         this.address = address;
     }
+
+    @Override
+    public String toString() {
+        return this.getName(); // ou tout autre champ que vous souhaitez afficher
+    }
 }

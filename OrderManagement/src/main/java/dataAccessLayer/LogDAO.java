@@ -10,9 +10,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * LogDAO class
+ */
 public class LogDAO {
 
-    // Insert Bill record
+    /**
+     * @param bill Bill
+     *             Insert a new Bill record
+     */
     public void insert(Bill bill) {
         try (Connection connection = DBConnection.getConnection()) {
             String query = "INSERT INTO logs (client_id, product_id, quantity, total_price) VALUES (?, ?, ?, ?)";
@@ -28,7 +34,10 @@ public class LogDAO {
         }
     }
 
-    // Read all Bill records
+    /**
+     * @return List<Bill>
+     *     Read all Bill records
+     */
     public List<Bill> readAll() {
         List<Bill> bills = new ArrayList<>();
         try (Connection connection = DBConnection.getConnection()) {

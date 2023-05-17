@@ -1,7 +1,7 @@
 // presentation/ClientWindow.java
 package presentation;
 
-import dataAccessLayer.ClientDAO;
+import businessLayer.ClientService;
 import model.Client;
 
 import javax.swing.*;
@@ -17,7 +17,8 @@ public class ClientWindow extends JFrame {
     private JButton editButton;
     private JButton deleteButton;
     private JTable clientTable;
-    private ClientDAO clientDAO; // Create a ClientDAO instance
+
+    private ClientService clientService;
 
 
     public ClientWindow() {
@@ -26,7 +27,7 @@ public class ClientWindow extends JFrame {
         setSize(800, 600);
         setLayout(null);
 
-        clientDAO = new ClientDAO(); // Initialize the ClientDAO instance
+        clientService = new ClientService(); // Initialize the ClientDAO instance
 
         initFields();
         initButtons();
@@ -54,7 +55,7 @@ public class ClientWindow extends JFrame {
                 String name = nameField.getText();
                 String address = addressField.getText();
                 Client client = new Client(0, name, address);
-                clientDAO.addClient(client);
+                clientService.addClient(client);
                 loadClientsFromDatabase();
             }
         });
@@ -71,7 +72,7 @@ public class ClientWindow extends JFrame {
                     String name = nameField.getText();
                     String address = addressField.getText();
                     Client client = new Client(id, name, address);
-                    clientDAO.updateClient(client);
+                    clientService.updateClient(client);
                     loadClientsFromDatabase();
                 }
             }
@@ -86,7 +87,7 @@ public class ClientWindow extends JFrame {
                 int selectedRow = clientTable.getSelectedRow();
                 if (selectedRow >= 0) {
                     int id = (int) clientTable.getValueAt(selectedRow, 0);
-                    clientDAO.deleteClient(id);
+                    clientService.deleteClient(id);
                     loadClientsFromDatabase();
                 }
             }
@@ -112,7 +113,7 @@ public class ClientWindow extends JFrame {
 
     // Load clients from the database and populate the table
     private void loadClientsFromDatabase() {
-        List<Client> clients = clientDAO.getAllClients(); // Use the ClientDAO instance to interact with the database
+        List<Client> clients = clientService.getAllClients(); // Use the ClientDAO instance to interact with the database
 
         if (clients != null) {
             DefaultTableModel model = (DefaultTableModel) clientTable.getModel();

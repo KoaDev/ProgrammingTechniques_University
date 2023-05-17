@@ -1,74 +1,50 @@
-// dataAccessLayer/ClientDAO.java
 package dataAccessLayer;
 
 import model.Client;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import static dataAccessLayer.DBConnection.getConnection;
-
+/**
+ * This class is used to access the client table from the database
+ */
 public class ClientDAO extends GenericDAO<Client> {
 
-    public void addClient(Client client) {
-        String query = "INSERT INTO clients (name, address) VALUES (?, ?)";
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setString(1, client.getName());
-            statement.setString(2, client.getAddress());
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void updateClient(Client client) {
-        String query = "UPDATE clients SET name = ?, address = ? WHERE id = ?";
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setString(1, client.getName());
-            statement.setString(2, client.getAddress());
-            statement.setInt(3, client.getId());
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteClient(int id) {
-        String query = "DELETE FROM clients WHERE id = ?";
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setInt(1, id);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
+    /**
+     * @return a list of all clients from the database
+     */
     public List<Client> getAllClients() {
-        List<Client> clients = new ArrayList<>();
-        String query = "SELECT * FROM clients";
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()) {
+        return super.findAll();
+    }
 
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String name = resultSet.getString("name");
-                String address = resultSet.getString("address");
-                clients.add(new Client(id, name, address));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return clients;
+    /**
+     * @param id the id of the client to be found
+     * @return the client with the given id
+     */
+    public Client findClientById(int id) {
+        return super.findById(id);
+    }
+
+    /**
+     * @param client the client to be added to the database
+     *              inserts the given client into the database
+     */
+    public void addClient(Client client) {
+        super.insert(client);
+    }
+
+    /**
+     * @param client the client to be updated
+     *               updates the given client in the database
+     */
+    public void updateClient(Client client) {
+        super.update(client);
+    }
+
+    /**
+     * @param id the id of the client to be deleted
+     *           deletes the client with the given id from the database
+     */
+    public void deleteClient(int id) {
+        super.deleteById(id);
     }
 }

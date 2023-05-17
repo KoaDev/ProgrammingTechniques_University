@@ -1,4 +1,3 @@
-// presentation/MainWindow.java
 package presentation;
 
 import javax.swing.*;
